@@ -1,5 +1,27 @@
 ---
 
+- name: Create a directory if it does not exist
+  ansible.builtin.file:
+    path: "{{ playbook_dir }}/vault"
+    state: directory
+    mode: '0755'
+  when: private_ssh_key is defined
+
+- name: Create ssh key from vars
+  delegate_to: localhost
+  ansible.builtin.template:
+    src: private_ssh_key.j2
+    dest: "{{ playbook_dir }}/vault/ssh-key"
+    mode: '0600'
+  when: private_ssh_key is defined
+
+- name: Create ssh key pub from vars
+  delegate_to: localhost
+  ansible.builtin.template:
+    src: private_ssh_key.pub.j2
+    dest: "{{ playbook_dir }}/vault/ssh-key.pub"
+  when: private_ssh_key_pub is defined
+
 - name: Check that SSH private key is present in vault/ssh-key
   delegate_to: localhost
   stat:
