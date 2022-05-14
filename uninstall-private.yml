@@ -26,7 +26,7 @@
     - name: Create ssh key pub from vars
       delegate_to: localhost
       ansible.builtin.template:
-        src: src: "{{ playbook_dir }}/roles/ocp4-cloud-ipi/templates/private_ssh_key.pub.j2"
+        src: "{{ playbook_dir }}/roles/ocp4-cloud-ipi/templates/private_ssh_key.pub.j2"
         dest: "{{ playbook_dir }}/vault/ssh-key.pub"
       when: private_ssh_key_pub is defined
 
