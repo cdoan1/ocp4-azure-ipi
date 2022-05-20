@@ -4,9 +4,31 @@
   hosts: localhost
   gather_facts: yes
   vars_files:
-    - vault/azure.yml
+    # - vault/azure.yml
     - vars/vars-private.yml
   tasks:
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/vault"
+        state: directory
+        mode: '0755'
+      when: private_ssh_key is defined
+
+    - name: Create ssh key from vars
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/roles/ocp4-cloud-ipi/templates/private_ssh_key.j2"
+        dest: "{{ playbook_dir }}/vault/ssh-key"
+        mode: '0600'
+      when: private_ssh_key is defined
+
+    - name: Create ssh key pub from vars
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/roles/ocp4-cloud-ipi/templates/private_ssh_key.pub.j2"
+        dest: "{{ playbook_dir }}/vault/ssh-key.pub"
+      when: private_ssh_key_pub is defined
 
     - name: Get facts for one Public IP
       azure_rm_publicipaddress_info:
@@ -43,7 +65,6 @@
   hosts: inv
   become: true
   vars_files:
-    - vault/azure.yml
     - vars/vars-private.yml
   tasks:
     - name: Delete the Openshift Cluster
@@ -53,7 +74,6 @@
   hosts: localhost
   gather_facts: yes
   vars_files:
-    - vault/azure.yml
     - vars/vars-private.yml
   tasks:
     - name: Destroy Resource Group of Openshift
