@@ -1,5 +1,44 @@
 ---
 
+- name: "Support AAP Deployment"
+  hosts: localhost
+  gather_facts: no
+  tasks:
+    # - name: Create Ansible Vault folder
+    #   shell: |
+    #     mkdir {{ playbook_dir }}/vault
+    #     touch {{ playbook_dir }}/vault/azure.yml
+    #     echo > {{ playbook_dir }}/vault/ssh-key <<EOF
+    #     {{ private_ssh_key | b64decode }}
+    #     EOF
+    #     chmod 0600 {{ playbook_dir }}/vault/ssh-key
+    #     echo > {{ playbook_dir }}/vault/ssh-key.pub <<EOF
+    #     {{ private_ssh_key_pub }}
+    #     EOF
+    #   when: bypass_vault_folder_requirement is defined
+
+    - name: Create a directory if it does not exist
+      ansible.builtin.file:
+        path: "{{ playbook_dir }}/vault"
+        state: directory
+        mode: '0755'
+      when: private_ssh_key is defined
+
+    - name: Create ssh key from vars
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/roles/ocp4-cloud-ipi/templates/private_ssh_key.j2"
+        dest: "{{ playbook_dir }}/vault/ssh-key"
+        mode: '0600'
+      when: private_ssh_key is defined
+
+    - name: Create ssh key pub from vars
+      delegate_to: localhost
+      ansible.builtin.template:
+        src: "{{ playbook_dir }}/roles/ocp4-cloud-ipi/templates/private_ssh_key.pub.j2"
+        dest: "{{ playbook_dir }}/vault/ssh-key.pub"
+      when: private_ssh_key_pub is defined
+
 - name: "[OCP4-INSTALL] Create Azure Openshift Cluster in Private/Disconnected Mode"
   hosts: localhost
   gather_facts: yes
